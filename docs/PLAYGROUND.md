@@ -83,10 +83,25 @@ directly into movement. The agent writes its own Python, computes targets from
 fresh state, and verifies with new observations. No canned movement counts as
 startup work. Tool timestamps distinguish model waits from tool execution.
 
-The camera viewer uses the public video atlas while it is current. When its
-program-date-time is more than2 seconds behind, bounded public JPEG reads keep
-the independent camera views current. The UI labels these as snapshots. This
-does not change the agent's fresh camera/depth requests or retained run video.
+The camera viewer relays low-latency HLS parts from the single public atlas and
+displays a program-date-time delay estimate. It does not repeatedly poll the
+individual JPEG feeds. Agent camera/depth requests and retained video remain
+separate. A browser observation measured0.9 s video delay; this estimate alone
+does not establish the harness's physical-motion timing requirement.
+
+One pristine remote worker warms at service startup and after a run finishes.
+Its reserved workspace has no run metadata, task, owner or robot lease. No model
+turn begins until an actual Run supplies the task and scene. Assignment preserves
+the warm process while creating fresh owner-scoped run metadata. Stop/shutdown
+reaps only the owned executor; a discarded reservation is never reused between
+people. Run metadata records worker setup timestamps separately from click and
+entry timing. The model-turn deadline starts when task input arrives.
+
+The optional Python helper invokes the unchanged original client's entry point
+in the generated program's process, serialising its argv/stdout interface. This
+avoids starting another Python interpreter for every request. The original
+client still owns sequence allocation, polling and timeouts; motion is never
+automatically retried. Agent programs and action targets remain runtime output.
 
 ## Service protocol
 

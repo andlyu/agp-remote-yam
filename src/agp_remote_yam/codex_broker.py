@@ -236,10 +236,16 @@ def execute(sock, value, *, binary, home, timeout=610, model='gpt-6-astra', effo
                                             reasoning_effort=message['result'].get('reasoningEffort'))
                                     if value['op'] == 'prepare':
                                         send(sock, dict(prepared=True))
-                                        extra = receive(sock)
+                                        previous_timeout = sock.gettimeout()
+                                        sock.settimeout(None)
+                                        try:
+                                            extra = receive(sock)
+                                        finally:
+                                            sock.settimeout(previous_timeout)
                                         if not isinstance(extra, dict) or set(extra) not in ({'prompt'}, {'prompt', 'images'}):
                                             raise ValueError('Invalid prepared coding input')
                                         value = validate(dict(value, op='coding', protocol='agp-codex-remote-v1', **extra))
+                                        deadline = time.monotonic()+timeout
                                     request(4, 'turn/start', dict(threadId=thread,
                                         input=[dict(type='text', text=value['prompt'])] +
                                               [dict(type='image', url=image) for image in value.get('images', [])],

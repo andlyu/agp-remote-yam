@@ -376,3 +376,30 @@ physical AgP integration and passing software tests do not erase those misses.
 - Camera timestamps independently showed a public publisher edge already about
   2 s behind wall time; the new viewer uses labelled real API snapshots when
   rendered video is delayed. Physical and visual acceptance are still pending.
+
+### Latency acceptance attempt 7 — host contention, target missed
+
+- Source6e6c3cab5797c4dece5183feef2966b0385b7424; normal confirmed-identity
+  UI run `4523726a490e46b9977365ae83605b33`, Andrew / Agent as Policy / RoboHouse.
+- Entry01:55:50.2769 UTC; Run01:55:51.594. Measured completion25.177 s after
+  click /26.494 s entry. The generated trajectory was first requested23.634 s
+  after server creation. Both timing gates missed; no research exception.
+- The agent received fresh leased image input and started a new coding tool
+  step before its generated movement. Measured joint0 delta+0.037766 rad for
+  the single+0.04 rad target change; other joints and grippers preserved.
+  Fresh post-action images were inspected. Actual retained replay and timed
+  screen frames are preserved in the chat evidence bundle.
+- Container startup alone took11.033 s. Shared host:2 vCPU /4 GiB, load19.41,
+  swap about2.65 GiB and sampled CPU100%. Other integrations accounted for most
+  sampled CPU use. No unrelated services were stopped or reprioritized.
+- Repeated preview JPEG polling was removed. The single public atlas now uses
+  low-latency HLS parts; browser-visible program-date-time delay measured0.9 s.
+  This is a delay estimate, not a substitute for timed visual motion evidence.
+- New candidate: one pristine standby worker, no task/model turn/robot lease
+  until Run; owner assignment once, shutdown and idle-deadline tests. The helper
+  invokes the unchanged author client entry point without per-request Python
+  subprocess startup. Final full suite94 passed in30.29 s.
+- Actual-model mock `c1f83cd90aba4faea17609b9bcd74f29`: standby setup7.381 s
+  separately; first mock completion12.486 s including10 s mock admission wait.
+  This is nonphysical evidence. Earlier standby-only mock17.655 s missed the
+  mock timing target; its receipt is retained. New physical acceptance pending.

@@ -3,6 +3,7 @@ from pathlib import Path
 import socket
 import sys
 import threading
+import time
 import pytest
 from agp_remote_yam.codex_broker import execute,receive,send,validate
 
@@ -75,7 +76,7 @@ for line in sys.stdin:
         try:
             request=value()
             if prepared: request=dict(op='prepare',protocol='agp-codex-remote-v2',executor_url=request['executor_url'],executor_token=request['executor_token'])
-            execute(left,request,binary=str(binary),home=home,timeout=5,model=model,effort=effort)
+            execute(left,request,binary=str(binary),home=home,timeout=1 if prepared else 5,model=model,effort=effort)
         except Exception as exc:failures.append(exc)
     thread=threading.Thread(target=run);thread.start();right.settimeout(6)
     try:
@@ -83,6 +84,7 @@ for line in sys.stdin:
         while event.get('event', {}).get('type') == 'agp.profile': event=receive(right)
         if prepared:
             assert event==dict(prepared=True)
+            time.sleep(1.1)  # Idle standby must not consume the model-turn budget.
             send(right,dict(prompt='offline fixture'))
             event=receive(right)
         if handoff:

@@ -51,11 +51,36 @@ class RunManager:
             self.skillbook = Skillbook(Path(settings.data) / "skillbook.sqlite3", settings.memory_encoder)
         self.lock = threading.RLock()
         self.active = {}
+        self._standby = None
+        self._closed = False
         # A server restart never resumes a lease or replays motion automatically.
         for run in self.store.list():
             if run["status"] in ("preparing", "queued", "running"):
                 self.store.update(self.store.directory(run["id"]), status="interrupted",
                                   error="Server restarted; inspect the robot before a new run")
+        self._warm_standby()
+
+    def _runtime(self, directory, journal, duration=600):
+        return AgentRuntime(directory, journal, model=self.settings.model,
+            mode="demo" if self.settings.demo else self.settings.agent_mode,
+            timeout_s=duration, executable=self.settings.codex)
+
+    def _warm_standby(self):
+        if self.settings.agent_mode != 'remote' or self.settings.memo_site:
+            return
+        with self.lock:
+            if self._closed or self.active or self._standby is not None:
+                return
+            directory = self.store.reserve()
+            journal = Journal(directory)
+            runtime = self._runtime(directory, journal)
+            try:
+                runtime.check_available()
+                runtime.warm()
+                self._standby = (directory, journal, runtime)
+            except Exception as exc:
+                runtime.cancel()
+                journal.add('worker', 'Standby preparation unavailable', error_type=type(exc).__name__)
 
     def owned(self, identity, owner):
         directory = self.store.directory(identity)
@@ -90,11 +115,18 @@ class RunManager:
                 raise ValueError("This browser already has an active run")
             if parent:
                 self.owned(parent, owner)
-            metadata, directory = self.store.create(task.strip(), parent=parent, with_memo=self.settings.memo_site)
-            journal = Journal(directory)
-            runtime = AgentRuntime(directory, journal, model=self.settings.model,
-                mode="demo" if self.settings.demo else self.settings.agent_mode,
-                timeout_s=duration, executable=self.settings.codex)
+            standby, self._standby = self._standby, None
+            if standby is not None and standby[2].process.poll() is not None:
+                standby[2].cancel(); standby = None
+            try:
+                metadata, directory = self.store.create(task.strip(), parent=parent,
+                    with_memo=self.settings.memo_site, reserved=standby[0] if standby else None)
+            except Exception:
+                if standby is not None:standby[2].cancel()
+                raise
+            journal = standby[1] if standby else Journal(directory)
+            runtime = standby[2] if standby else self._runtime(directory, journal, duration)
+            runtime.timeout_s = duration
             memory = None
             if self.settings.memo_site:
                 from .memo import MemoryChannel
@@ -104,6 +136,9 @@ class RunManager:
                               duration_s=duration, approach="Agent as Policy + MEMO" if memo else APPROACH,
                               runner=runner, timing=timing,
                               robot_id=robot_id,
+                              worker_warm_started_at=runtime.warm_started_at,
+                              worker_prepared_at=(json.loads((directory/'worker-prepared.json').read_text())['prepared_at']
+                                  if (directory/'worker-prepared.json').is_file() else None),
                               **(dict(memo_enabled=memo, memory_version=memory.version) if memory else {}))
             journal.add("run_requested", "Agent as Policy run requested", approach="Agent as Policy + MEMO" if memo else APPROACH,
                         runner=runner, physical=not self.settings.offline, timing=timing)
@@ -221,6 +256,7 @@ class RunManager:
             finally:
                 with self.lock:
                     self.active.pop(directory.name, None)
+                self._warm_standby()
 
     def stop(self, identity, owner):
         self.owned(identity, owner)
@@ -270,6 +306,10 @@ class RunManager:
 
     def close(self):
         with self.lock:
+            self._closed = True
             active = list(self.active.items())
+            standby, self._standby = self._standby, None
+        if standby is not None:
+            standby[2].cancel()
         for identity, context in active:
             self.stop(identity, context["owner"])

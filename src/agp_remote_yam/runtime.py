@@ -39,6 +39,39 @@ class AgentRuntime:
         self.initial_ready = threading.Event()
         self.thread = None
         self.leased_reviewed = threading.Event()
+        self._warm_errors = None
+        self._prepared_process = False
+        self.warm_started_at = None
+
+    def environment(self):
+        env = {key: value for key, value in os.environ.items()
+               if key in ("HOME", "USER", "LOGNAME", "LANG", "LC_ALL", "TERM", "TMPDIR", "CODEX_HOME",
+                          "CODEX_API_KEY", "SSL_CERT_FILE", "SSL_CERT_DIR", "NODE_EXTRA_CA_CERTS",
+                          "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS")}
+        env["PATH"] = str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", "")
+        if self.mode == "remote":
+            env.pop("CODEX_API_KEY", None)
+        return env
+
+    def warm(self):
+        """Prepare one clean executor/thread; stdin has no task or model input."""
+        if self.mode != 'remote':
+            return
+        with self._lock:
+            if self.process is not None or self.stopped.is_set():
+                return
+            Workspace(self.workspace).json('RESULT_SCHEMA.json', RESULT_SCHEMA)
+            self._warm_errors = (self.directory / 'agent.stderr.log').open('a')
+            try:
+                self.process = subprocess.Popen(self.command(), cwd=self.workspace, env=self.environment(),
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._warm_errors, text=True,
+                    start_new_session=True, bufsize=1)
+            except Exception:
+                self._warm_errors.close(); self._warm_errors = None
+                raise
+            self._prepared_process = True
+            self.warm_started_at = time.time()
+            self.state = 'standby_worker'
 
     def check_available(self):
         binary = {"docker": "docker", "remote": "podman"}.get(self.mode, self.executable)
@@ -225,21 +258,20 @@ class AgentRuntime:
     def _turn(self, prompt):
         if self.mode != "remote":
             prompt = self._initial_prompt(prompt)
-        env = {key: value for key, value in os.environ.items()
-               if key in ("HOME", "USER", "LOGNAME", "LANG", "LC_ALL", "TERM", "TMPDIR", "CODEX_HOME",
-                          "CODEX_API_KEY", "SSL_CERT_FILE", "SSL_CERT_DIR", "NODE_EXTRA_CA_CERTS",
-                          "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS")}
-        env["PATH"] = str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", "")
-        if self.mode == "remote":
-            env.pop("CODEX_API_KEY", None)
+        env = self.environment()
         (self.workspace / "FINAL.json").unlink(missing_ok=True)
         with (self.directory / "agent.stderr.log").open("a") as errors, (self.directory / "agent.jsonl").open("a") as raw:
             with self._lock:
                 if self.stopped.is_set():
                     return None
-                self.process = subprocess.Popen(self.command(), cwd=self.workspace, env=env,
-                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=errors, text=True,
-                    start_new_session=True, bufsize=1)
+                if self._prepared_process:
+                    self._prepared_process = False
+                    if self.process.poll() is not None:
+                        raise RuntimeError('Prepared coding worker exited before assignment')
+                else:
+                    self.process = subprocess.Popen(self.command(), cwd=self.workspace, env=env,
+                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=errors, text=True,
+                        start_new_session=True, bufsize=1)
                 process = self.process
                 self.state = "running"
             if self.mode == "remote":
@@ -318,7 +350,7 @@ class AgentRuntime:
             try:
                 os.killpg(process.pid, signal.SIGTERM)
             except ProcessLookupError:
-                return
+                pass
             try:
                 process.wait(timeout=2)
             except subprocess.TimeoutExpired:
@@ -327,3 +359,16 @@ class AgentRuntime:
                 except ProcessLookupError:
                     pass
                 process.wait(timeout=2)
+        if self.mode == 'remote' and process is not None:
+            try:
+                subprocess.run(['podman', 'rm', '--force', self.container], timeout=8, check=False,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except (OSError, subprocess.TimeoutExpired):
+                self.journal.add('error', 'Owned executor cleanup could not be confirmed')
+            (self.directory / 'executor.token').unlink(missing_ok=True)
+        with self._lock:
+            errors, self._warm_errors = self._warm_errors, None
+        if errors is not None:
+            errors.close()
+        if self.thread is None:
+            self.finished.set()

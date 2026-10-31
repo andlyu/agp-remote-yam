@@ -139,6 +139,8 @@ def main():
                 while True:
                     prepared = receive(sock)
                     if prepared.get('prepared') is True:
+                        from .workspace import Workspace
+                        Workspace(workspace.parent).json('worker-prepared.json', dict(prepared_at=time.time()))
                         break
                     if 'event' not in prepared:
                         raise RuntimeError('Remote coding preparation failed')

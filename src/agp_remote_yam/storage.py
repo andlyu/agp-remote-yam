@@ -22,7 +22,8 @@ class RunStore:
         self.root.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
 
-    def create(self, task, *, parent=None, with_memo=False):
+    def reserve(self, *, with_memo=False):
+        """A pristine worker workspace, without a run, task, owner or lease."""
         identity = uuid.uuid4().hex
         directory = self.root / identity
         workspace = directory / "workspace"
@@ -35,6 +36,15 @@ class RunStore:
             (workspace / "bridge_memo").mkdir()
             for name in ("memo_client.py", "MEMO.md"):
                 (workspace / name).write_bytes(files("agp_remote_yam").joinpath("assets", name).read_bytes())
+        return directory
+
+    def create(self, task, *, parent=None, with_memo=False, reserved=None):
+        directory = self.reserve(with_memo=with_memo) if reserved is None else Path(reserved)
+        if (directory.parent != self.root or directory.resolve() != directory
+                or len(directory.name) != 32 or any(c not in '0123456789abcdef' for c in directory.name)
+                or (directory / 'run.json').exists() or not (directory / 'workspace').is_dir()):
+            raise ValueError('Invalid or already assigned worker workspace')
+        identity, workspace = directory.name, directory / 'workspace'
         metadata = dict(id=identity, task=task, created_at=time.time(), status="preparing", parent=parent,
                         outcome=None, mode=None)
         if parent:

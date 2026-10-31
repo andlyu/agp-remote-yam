@@ -3,23 +3,37 @@
 No targets, motion plans, retries, hardware access or task logic live here.
 Run generated programs with PYTHONPATH=. python3 scratch/program.py.
 """
+from contextlib import redirect_stdout
+import io
 import json
 from pathlib import Path
 import re
-import subprocess
 import sys
+import threading
+import robot_client
 
 ROOT = Path(__file__).resolve().parent
+_LOCK = threading.RLock()
 
 
 def request(command, arguments=None, *, arm="left"):
     if arm not in ("left", "right"):
         raise ValueError("Choose left or right")
-    process = subprocess.run([sys.executable, str(ROOT / "robot_client.py"), str(ROOT),
-                              "--arm", arm, command, json.dumps(arguments or {})],
-                             cwd=ROOT, capture_output=True, text=True, timeout=300)
-    value = json.loads(process.stdout)
-    if process.returncode or not value.get("ok"):
+    # Invoke the unchanged CLI entry point in this process. Its protocol,
+    # timeout and sequence allocation remain authoritative. Serialise calls
+    # because the upstream CLI takes argv and writes one stdout response.
+    with _LOCK:
+        previous = sys.argv
+        output = io.StringIO()
+        try:
+            sys.argv = [str(ROOT / "robot_client.py"), str(ROOT), "--arm", arm,
+                        command, json.dumps(arguments or {})]
+            with redirect_stdout(output):
+                returncode = robot_client.main()
+        finally:
+            sys.argv = previous
+        value = json.loads(output.getvalue())
+    if returncode or not value.get("ok"):
         raise RuntimeError(value)
     return value
 

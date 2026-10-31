@@ -114,6 +114,17 @@ def test_experience_does_not_export_symlinks_and_new_run_is_fresh(tmp_path):
     assert not (fresh / "workspace/knowledge/notes.md").exists()
 
 
+def test_reserved_workspace_is_not_a_run_and_cannot_be_reassigned(tmp_path):
+    store=RunStore(tmp_path/'runs');reserved=store.reserve()
+    assert store.list()==[]
+    with pytest.raises(FileNotFoundError):store.directory(reserved.name)
+    metadata,directory=store.create('Assigned once',reserved=reserved)
+    assert metadata['id']==reserved.name and directory==reserved
+    with pytest.raises(ValueError):store.create('Another owner',reserved=reserved)
+    outside=tmp_path/('a'*32);(outside/'workspace').mkdir(parents=True)
+    with pytest.raises(ValueError):store.create('Escape',reserved=outside)
+
+
 def test_browser_stop_revokes_mock_session_and_reaps_agent(tmp_path, monkeypatch):
     monkeypatch.setattr(AgentRuntime, "command", lambda _: [sys.executable, "-u", "-c", "import time; time.sleep(60)"])
     app = App(Settings(data=tmp_path, demo=True))

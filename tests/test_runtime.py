@@ -108,3 +108,44 @@ def test_stop_during_preparation_reaps_worker_without_creating_robot_tools(tmp_p
     assert not hasattr(runtime,'bridge')
     runtime.cancel()
     assert runtime.finished.wait(2) and runtime.process.poll() is not None
+
+
+def test_standby_reuses_clean_process_but_sends_no_task_before_admission(tmp_path,monkeypatch):
+    directory=RunStore(tmp_path).reserve()
+    runtime=AgentRuntime(directory,Journal(directory),mode='remote')
+    runtime.command=lambda:[sys.executable,'-u','-c','import sys;sys.stdin.read()']
+    monkeypatch.setattr(subprocess,'run',lambda *a,**k:None)
+    runtime.warm(); process=runtime.process
+    assert process.poll() is None and runtime.thread is None
+    assert not (directory/'run.json').exists() and not (directory/'workspace/TASK.md').exists()
+    assert not hasattr(runtime,'bridge')
+    runtime.prepare('A newly assigned task')
+    deadline=time.monotonic()+2
+    while runtime._prepared_process and time.monotonic()<deadline:time.sleep(.01)
+    assert runtime.process is process and not runtime._prepared_process
+    assert not runtime.initial_ready.is_set() and not runtime.backend_ready.is_set()
+    runtime.cancel()
+    assert runtime.finished.wait(2) and process.poll() is not None
+    assert runtime._warm_errors is None
+
+
+def test_manager_assigns_standby_to_one_owner_and_closes_unused_worker(tmp_path,monkeypatch):
+    monkeypatch.setattr(AgentRuntime,'check_available',lambda self:None)
+    monkeypatch.setattr(AgentRuntime,'command',lambda self:[sys.executable,'-u','-c','import sys;sys.stdin.read()'])
+    original_run=subprocess.run
+    monkeypatch.setattr(subprocess,'run',lambda command,*a,**k:None if command[0]=='podman' else original_run(command,*a,**k))
+    manager=RunManager(Settings(data=tmp_path,agent_mode='remote',mock_robot=True))
+    reserved,journal,runtime=manager._standby
+    assert manager.store.list()==[] and not list((reserved/'workspace/scratch').iterdir())
+    manager._run=lambda *a:None  # no model or robot trial in this ownership test
+    identity=manager.start('A new task','owner-a')
+    assert identity==reserved.name and manager.active[identity]['runtime'] is runtime
+    assert manager._standby is None
+    assert manager.detail(identity,'owner-a')['task']=='A new task'
+    with pytest.raises(PermissionError):manager.detail(identity,'owner-b')
+    manager.close()
+    assert runtime.process.poll() is not None
+    manager2=RunManager(Settings(data=tmp_path/'unused',agent_mode='remote',mock_robot=True))
+    unused=manager2._standby[2]
+    manager2.close()
+    assert unused.process.poll() is not None and unused.finished.is_set()
