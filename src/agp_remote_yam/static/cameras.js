@@ -59,8 +59,8 @@
         // atlas rather than polling each camera and competing with the worker.
         const hd = ["synchronized-hd", "robo-house"].includes(stream.path);
         hls = new root.Hls({enableWorker:false, lowLatencyMode:true, maxBufferLength:4,
-          liveSyncMode:"buffered", backBufferLength:0, liveSyncDuration:hd ? .5 : 1,
-          liveMaxLatencyDuration:hd ? 1 : 2, liveSyncOnStallIncrease:0, maxLiveSyncPlaybackRate:1.05});
+          liveSyncMode:"buffered", backBufferLength:0, liveSyncDuration:hd ? .2 : 1,
+          liveMaxLatencyDuration:hd ? .75 : 2, liveSyncOnStallIncrease:0, maxLiveSyncPlaybackRate:1.2});
         hls.on(root.Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {play.hidden = false;}));
         hls.on(root.Hls.Events.ERROR, (_, data) => {if (data.fatal) retry();});
         hls.loadSource(url); hls.attachMedia(video);

@@ -188,3 +188,7 @@ def test_initial_html_has_matching_csrf_and_safe_config_without_extra_fetch(tmp_
     assert seed['csrf']==config['csrf'] and seed['model']==model
     assert seed['robot_id']=='robot-ba8413962083809c' and seed['approach']=='Agent as Policy'
     assert b'<!--INITIAL_CONFIG-->' not in body
+    # Every script referenced by the actual HTML must be served, not just exist on disk.
+    for asset in re.findall(rb'<script src="(/[^\"]+)"', body):
+        asset_status, _, data = request(app, asset.decode(), cookie=cookie)
+        assert asset_status == 200 and data, asset

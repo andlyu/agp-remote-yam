@@ -140,9 +140,9 @@ class App:
         if robot_id not in {self.settings.robot_id, *ROBOTS}:
             raise ValueError("Choose a configured YAM station")
         video_stream = self.video_streams[robot_id]
-        if method == "GET" and path in ("/", "/static/app.js", "/static/style.css", "/static/cameras.js"):
+        if method == "GET" and path in ("/", "/static/app.js", "/static/style.css", "/static/cameras.js", "/static/progress.js"):
             name = "index.html" if path == "/" else path.rsplit("/", 1)[-1]
-            mime = {"index.html": "text/html; charset=utf-8", "app.js": "text/javascript", "cameras.js": "text/javascript", "style.css": "text/css"}[name]
+            mime = {"index.html": "text/html; charset=utf-8", "app.js": "text/javascript", "cameras.js": "text/javascript", "progress.js": "text/javascript", "style.css": "text/css"}[name]
             if self.settings.memo_site and name in ("index.html", "app.js"):
                 name = "memo-" + name
             data = files("agp_remote_yam").joinpath("static", name).read_bytes()
@@ -215,7 +215,7 @@ class App:
             identity = self.manager.start(value.get("task"), owner, duration=value.get("duration_s", 300),
                 parent=value.get("experience_run") or None, goal=goal, memo=value.get("memo", False),
                 memory_version=value.get("memory_version"), runner=runner, timing=value.get("timing"),
-                robot_id=value.get("robot_id"))
+                robot_id=value.get("robot_id"), execution_mode=value.get("execution_mode"))
             return 202, "application/json", dict(id=identity)
         if path.startswith("/api/runs/"):
             parts = path.split("/")

@@ -19,3 +19,16 @@ label[for="memo-mode"]{margin-top:16px}.camera-label,.panel-heading span,.event-
 aside h1{font-size:26px;letter-spacing:-.5px}.identity-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}.identity-grid>div{min-width:0}#runner-fields .identity-note{margin:0}#runner-fields input{min-width:0}
 
 #run-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}.workspace-top>div{min-width:0}#run-timing:empty,#run-attribution:empty{display:none}
+
+/* Persistent, evidence-driven status at each initiating action. */
+.run-progress{margin:0 0 12px;padding:12px 0 14px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.run-progress p{font-size:12px;line-height:1.55;margin:6px 0;color:var(--muted)}
+.run-progress .progress-title{font-size:14px;font-weight:600;color:var(--ink);margin-top:0}
+.run-progress ul{display:flex;flex-wrap:wrap;gap:4px 12px;list-style:none;margin:10px 0 0;padding:0;font-size:12px;line-height:1.55;color:var(--green)}
+.run-progress ul::before{content:"Completed:";font-weight:600;width:100%}
+.run-progress button,.replay-playback button{font-size:12px;padding:8px 11px;margin-top:8px}
+.run-progress[data-stage="failed"] .progress-title,.run-progress[data-stage="connection"] .progress-title,.run-progress[data-stage="stop-unconfirmed"] .progress-title{color:#a53b30}
+#progress-wait{color:#885d31}#history-status:empty,#file-status:empty,#review-status:empty{display:none}
+#history-status{font-size:12px;margin:10px 0 0}#file-status{padding:0 18px;margin:8px 0}
+.replay-playback{padding:0 18px 14px}.replay-playback .identity-note{padding:0;margin:0}.replay-playback:has(p:empty):not(:has(button:not([hidden]))){display:none}
+@media(max-width:650px){#runner-fields input,textarea,select{font-size:16px}.run-progress .progress-title{font-size:16px}.run-progress p{font-size:14px}}

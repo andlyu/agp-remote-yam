@@ -18,9 +18,22 @@ def runner_identity(value, *, automated_default=False):
     name, email = value.get("name", ""), value.get("email", "")
     if not isinstance(name, str) or not 1 <= len(name.strip()) <= 160:
         raise ValueError("Enter your name")
+    if name.strip().casefold() in {"anonymous", "autonomous", "automated", "system"}:
+        raise ValueError("Confirm your actual name; record automation as the execution mode")
     if not isinstance(email, str) or len(email) > 254 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email.strip()):
         raise ValueError("Enter a valid email")
     return {"kind": "human", "name": name.strip(), "email": email.strip()}
+
+
+def run_execution_mode(value, runner):
+    """Keep a person's identity intact when browser/model tests use automation."""
+    system = runner["kind"] == "automated"
+    value = value if value is not None else ("system" if system else "interactive")
+    if value not in ("interactive", "automated_test", "system"):
+        raise ValueError("Choose a valid execution mode")
+    if system != (value == "system"):
+        raise ValueError("User-initiated tests require the confirmed human name and email")
+    return value
 
 
 def run_timing(value):

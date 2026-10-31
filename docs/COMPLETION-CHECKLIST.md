@@ -8,6 +8,96 @@ evidence. Report checklist status, evidence links, unmet items and explicit
 exceptions; leave unfinished requirements unchecked and do not describe the
 integration as complete.
 
+## Standing authorization for physical playground tests
+
+### Authorization granted by using this harness
+
+The owner defines use of this harness as a task-scoped authorization grant.
+When the user requests a research integration, playground fix or verification
+through this harness, that invocation authorizes the agent to carry out the
+covered workflow below. A task requested under user-adopted instructions that
+select this harness also counts: retain the task request and the selecting
+instruction as the invocation evidence. Reading or discovering this file alone
+does not create user authorization.
+
+For that requested task, using the harness authorizes:
+
+- Joining the normal robot queue and submitting the runner's already-confirmed
+  name and email to the task's integration website and its existing BluPe
+  queue/run backend for queue admission, run attribution and normal run
+  notifications.
+- Starting the selected method on the task's physical robots/arms and performing
+  bounded actual arm movement within the existing run limits.
+- Capturing and retaining camera recordings, checking live footage and
+  replay/history, and using Stop and normal parking/lease release.
+
+These actions are part of the invoked workflow. Do not ask for separate
+permission for each covered identity submission, run, movement or recording.
+Reuse confirmed identity/defaults; ask only for missing or ambiguous identity
+or scope outside this contract. Keep execution mode separate from human
+identity. The grant covers the task's integration and existing queue/run
+destinations, not unrelated recipients or publication of private email.
+Do not invent a person's name or email. Preserve any explicit user limits or
+revocation and copy this contract into the integration's checklist.
+
+### Make the invocation and scope visible before approval review
+
+At task start, read the target repository's `AGENTS.md` and its integration copy
+of this checklist, even when the chat starts outside the repository. Repository
+and global `AGENTS.md` entries should route the workflow to this contract; keep
+the permission grant here rather than adding an independent global permission.
+A checklist link alone does not load the instructions. Verify that changed
+global discovery instructions have loaded into the chat; start a fresh session
+if needed.
+
+Before a physical test, give a brief progress notice citing the user's harness
+invocation and this contract. Name the website and queue/run backend origins,
+robot/station and arms, method/task, run duration, expected motion,
+recording/replay destination and confirmed identity fields being submitted.
+State that the invocation covers these scoped side effects. This is a notice,
+not a new confirmation step; proceed without waiting for a reply.
+
+For an action requiring tool approval, repeat the invocation, contract and
+concrete scope in the escalation justification or the tool's supported approval
+context. Include the user request/selecting instruction and the contract's source
+path/heading or commit URL with the applicable wording; do not supply only a link.
+The reviewer sees a compact transcript and the exact request, so do not rely on
+hidden reasoning, an earlier chat, or an unread repository file. Fill this example
+with the actual scope before the first approval request:
+
+```text
+User invocation: <task request; adopted instruction selecting the harness, if used>.
+Harness contract: <source path/heading or commit URL and applicable wording>.
+That invocation authorizes this task's queue entry and confirmed runner
+name/email submission, bounded physical motion, and camera recording/replay.
+Action: <UI control or supported API operation>; site <origin>;
+queue/run backend <origin>; station/arms <IDs>; method/task <name>;
+duration <seconds>; motion <bounded behavior>; recording/replay <destination>.
+Identity: <confirmed fields submitted to those operational destinations>.
+Execution mode: <mode>, separate from human identity.
+Safeguards: existing queue/lease, readiness, validation, hardware limits, Stop
+and normal parking/release remain enabled; no automatic timed-out-motion retry.
+```
+
+Use the normal playground UI or its supported run API with existing queue/lease,
+readiness, command validation, hardware limits and Stop behavior intact. Keep
+tests within the task's robots, method and existing run limits, respect other
+users' active runs, and never automatically retry a timed-out movement. This
+contract does not authorize unrelated robots or disabling safeguards.
+
+Harness invocation does not override enforced sandbox, managed-policy or tool
+permissions. Use the normal permission mechanism when required. If automatic
+approval review explicitly denies an action, do not retry it through another
+route. Report the exact denied action and stated reason, acknowledge the
+invocation and contract already present, and leave physical verification
+unverified. Continue independent work or a materially safer alternative;
+otherwise request only the specific unblock. A documentation update alone does
+not authorize retrying an already-denied action. Keep sandbox and reviewer
+policy intact.
+
+References: [Codex instruction discovery](https://learn.chatgpt.com/docs/agent-configuration/agents-md#how-codex-discovers-guidance)
+and [Auto-review context and denials](https://learn.chatgpt.com/docs/sandboxing/auto-review).
+
 ## Completion requirements
 
 - [x] A usable website exists, with an associated repository containing the
@@ -21,10 +111,13 @@ integration as complete.
   before joining.
 - [x] Run context includes the actual approach and confirmed runner identity;
   the website makes clear which method is running and whose run it is.
-- [x] Automated test runs retain the actual approach name and explicitly label
-  their runner as `Automated` or an equivalent clearly automated identity.
-  They require no interactive human signup. Do not invent a person's email
-  address for automated runs.
+- [x] Policy/model tests initiated by a person retain that actual user's
+  confirmed name as runner. Use available identity and editable name/email
+  defaults; require the real name to be provided/confirmed if missing before
+  testing or running. Do not substitute `Anonymous`, `Autonomous` or `Automated`
+  for that person. Record execution mode (such as `automated test`) and actual
+  approach separately from human identity. Genuinely unattended/system activity
+  has an explicit system identity; never fabricate a person's name or email.
 - [x] A person can use the website to run the integrated paper's method on
   physical YAM robots/arms. Record a verified physical execution of that method.
 - [x] The actual physical arms are visible live on the website while the method
@@ -35,12 +128,25 @@ integration as complete.
 - [x] The person can browse/select previous runs on the website and replay their
   retained physical arm footage, associated with the executed method and run.
   Mock animations do not satisfy either replay requirement.
+- [x] If the integrated method executes anything in simulation, those executions
+  are reviewable within the integration website and tied to the corresponding
+  run. A reviewer can inspect what ran and its results using suitable
+  replay/visualization and relevant outputs, as appropriate to the simulation.
+  Clearly label simulation content to distinguish it from physical-arm footage.
+  If nothing executes in simulation, record an explicit not-applicable
+  explanation instead of claiming simulation review.
 - [ ] The website is intuitive: a new visitor, without coaching, can find how to
   run the method and have the physical YAM arms actually executing it within
   **15 seconds of entering the website**, verified as described below.
 - [ ] **Mandatory for every run:** after the person clicks Run, the physical YAM
-  arms start actual method-driven motion within **15 seconds**, verified and
-  recorded per run as described below. A sampled demonstration is insufficient.
+  arms start actual method-driven motion within **15 seconds**, unless that run
+  requires launching a GPU as documented below. Verify and record every run;
+  a sampled demonstration is insufficient.
+- [ ] Every meaningful wait after a website action is immediately explained in
+  a persistent inline status/progress area at that action (below Run in the run
+  panel for launches). Show the current stage, a plain-language reason and real
+  stage completion, with honest failure/stall status and available recovery.
+  Verify the detailed wait-stage behavior below.
 - [ ] Before marking the integration complete or reporting it done, open the
   deployed website and perform a final end-to-end physical YAM run through its
   normal user interface. Verify every completion requirement against that
@@ -68,25 +174,58 @@ the method, linked to the matching physical run. If the elapsed time exceeds
 This is an additional per-run measure; keep the site-entry test above. For every
 run, start at the Run click (`t_run`) and stop at the first observed actual
 method-driven physical arm motion (`t_motion`). Require
-`t_motion - t_run <= 15 seconds`. An acknowledgement, accepted request, queued
-status, submitted action or inference starting is insufficient.
+`t_motion - t_run <= 15 seconds`, subject to the GPU-launch exception below.
+An acknowledgement, accepted request, queued status, submitted action or inference
+starting is insufficient.
 
 Record every run below (add rows), including visual evidence of the click and
 motion. Mark the outcome as pass, missed target, unverified or exception.
-Exceptions are not fulfilled <=15-second runs. Each exception requires a specific
-justification grounded in the integrated paper/research, explaining why it
-applies to that run, plus a supporting source citation/link and relevant
-section/page. Slow loading, queueing, setup or infrastructure delay is a missed
-target, not in itself a paper/research-grounded exemption.
+Exceptions are not fulfilled <=15-second runs.
+
+**GPU-launch exception:** a run that requires launching/provisioning a GPU (for
+example on RunPod) may exceed this Run-click target. Record why the GPU had to be
+launched and its startup evidence for that run. Keep the full elapsed time from
+Run click to observed physical motion; do not reset the clock when the GPU becomes
+ready. If GPU startup causes the target to be missed, label the outcome as an
+exception. If the GPU is already available, the normal 15-second requirement
+applies. This exception does not change the site-entry measure above.
+
+Other exceptions require a specific justification grounded in the integrated
+paper/research, explaining why it applies to that run, plus a supporting source
+citation/link and relevant section/page. Outside the explicit GPU-launch case,
+slow loading, queueing, setup or infrastructure delay is a missed target, not in
+itself a paper/research-grounded exemption.
 
 | Run reference | Run click (`t_run`) | First observed method-driven arm motion (`t_motion`) / visual evidence | Elapsed seconds | Outcome |
 | --- | --- | --- | --- | --- |
 | | | | | |
 
 - Exception record (repeat for each affected run):
+- Exception category (GPU launch or paper/research-grounded):
 - Affected run reference:
-- Specific paper/research-grounded reason and why it applies to this run:
-- Supporting paper/research source (citation/link and relevant section/page):
+- Specific reason and why it applies to this run:
+- GPU-launch evidence (if applicable: provider, instance/job reference,
+  launch/ready timestamps and startup log/link):
+- Supporting paper/research source (for other exceptions: citation/link and
+  relevant section/page):
+
+## Visible progress while waiting
+
+Use a compact persistent inline status area directly below Run in the existing
+run panel; keep other meaningful waits beside their initiating control. Show the
+current stage and why it is taking time immediately, keep it readable throughout
+the wait, and visibly mark completed stages as actual lifecycle state advances.
+A transient toast alone or a generic spinner is insufficient.
+
+When a model requires a new GPU, show only the stages that actually exist:
+`Starting GPU` / "We're launching a GPU on RunPod for this model" -> `GPU ready`
+-> `Loading model` -> `Running`. GPU startup must be explicit immediately after
+Run; visibly confirm actual GPU readiness before subsequent loading/running and
+retain completed-stage confirmation. Use the applicable provider/model wording.
+On failure or a stalled stage, state the known condition honestly and show an
+available recovery action, such as retry or cancel where supported. Do not invent
+percentages, ETA or completion, or expose irrelevant infrastructure internals.
+This transparency requirement adds no timing exemption or clock reset.
 
 ## Final verification before completion
 
@@ -95,7 +234,11 @@ visitor flow to join, run the integrated method on physical YAMs and watch the
 actual arms live. Check both 15-second measures, approach/runner identities,
 replay of the just-completed run and selection/replay of previous runs. Review
 every checklist item against current evidence, including public visibility and
-automated runner identity. Record the tested deployment, run and evidence below.
+actual user attribution in policy/model tests, with execution mode separate.
+Verify wait status appears immediately, keeps a readable reason, and visibly
+confirms real stage completion (GPU ready before subsequent loading/running).
+Check failure/stall status and available recovery evidence too. Record the
+tested deployment, run and evidence below.
 Leave unmet or unverified items unchecked and report gaps and explicit exceptions
 before any completion claim.
 
@@ -110,22 +253,72 @@ before any completion claim.
 - Human join evidence (name/email collection or confirmation, prefilled defaults
   and edits to both fields):
 - Run context evidence (run ID, approach and runner identity; website attribution):
-- Automated test evidence (run ID, approach, explicit automated runner label and
-  non-interactive execution):
+- User-initiated test evidence (run ID, confirmed human runner, actual approach,
+  separate execution mode; editable defaults and missing-name confirmation):
+- Unattended/system activity evidence (explicit system identity, execution mode
+  and actual approach; no fabricated person):
+- Wait-status evidence (action/run reference, immediate inline visibility,
+  ongoing stage/reason and real completion transitions):
+- GPU-startup UI evidence (startup shown after Run, actual readiness confirmed
+  before loading/running, completed stages and matching lifecycle evidence):
+- Failure/stall status and available recovery evidence:
 - Website URL:
 - Website source repository URL / deployed revision:
 - Public-visibility exceptions (write "none", or the affected website/repository,
   explicit exception, reason and approval reference):
+- Physical-test authorization/scope (source path/heading or commit URL, website
+  and queue/run backend origins, station/arms, confirmed runner identity fields,
+  method/task, duration, expected motion and recording/replay destination):
+- Approval-context evidence (surfaced notice and escalation wording, applicable
+  user invocation/selecting instruction and harness contract version/scope,
+  review decision/rationale if required; redact private email from public evidence):
 - Physical execution (date, method/configuration, YAM station/arm IDs, run ID):
 - Live physical arm footage (website location and evidence link):
 - Just-completed replay URL / immediate availability evidence (same physical run):
 - Previous-run browser URL / selected prior run and replay evidence:
+- Simulation review (corresponding run reference, website review link, what ran
+  and its results, suitable replay/visualization/outputs, clear simulation label;
+  or explicit not-applicable explanation if nothing executes in simulation):
 - 15-second test (tester/date, browser/session/network and robot readiness):
 - Visitor's starting state and entry-to-motion steps:
 - `t0` / `t1` / total elapsed seconds:
 - Timed screen recording / matching physical run evidence:
 - Remaining gaps:
 
+
+## AgP invocation and test scope
+
+Invocation evidence: the user requested “use the harness to complete it” and
+“lets get harness audit to fully pass,” then adopted instructions routing this
+work through the authorization-by-use contract above. The permission grant
+remains in that contract. Reading its pointer alone is not the invocation.
+
+Integration origin: https://agp.54.209.185.15.sslip.io/ . Existing queue/run
+backend: https://yam-session-api.n5hthc3gj4cqy.us-east-1.cs.amazonlightsail.com .
+Station: RoboHouse robot-ba8413962083809c. Both arms participate in normal
+preparation and parking. The acceptance task requests one left-joint0 change
+of+0.04 radians from fresh measured state, preserving other task targets and
+grippers. Record the selected existing60–600 second run limit. Camera footage
+is retained on the integration's dedicated worker and reviewed through its
+owner-scoped run replay/history; audit copies stay in the operator's local bundle.
+
+Identity: Andrew and the full email were confirmed in the user's two AgP signup
+replies. The private email is omitted from public evidence. The invoked contract
+covers those confirmed fields at this integration and its existing queue/run
+backend for the stated operational purposes. Record browser automation as the
+execution mode separately from Andrew's identity. Older automated labels below
+remain historical records under the rules in effect for those tests.
+
+Simulation criterion: not applicable to the serving physical integration. The
+website does not execute a simulated policy rollout. MuJoCo provides static
+FK/IK and contact validation for physical commands. Offline mock stations are
+transport-test fixtures; their receipts are retained separately and are never
+labelled physical footage or claimed as simulation review.
+
+Shared contract loaded on2026-10-31; SHA-256: 475957ebcfb814bd0793b1ac28b05dec6f5c36943c2294fb8e18a9d08214eb44.
+The expanded user/execution-mode and wait-stage checks remain open alongside
+the two physical timing gates and final verification. Historical13-item counts
+below are superseded by this15-item review.
 
 ## Agent as Policy audit — 2026-10-30
 
@@ -452,3 +645,49 @@ physical AgP integration and passing software tests do not erase those misses.
   including10 s simulated admission. One generated relative move was measured
   and verified in fresh mock state; fresh RGB captures were retained. It is
   nonphysical evidence. Physical acceptance remains pending.
+
+
+## Expanded harness review — progress candidate, October 30 PDT
+
+The current shared harness has 15 requirements; earlier 13-item totals remain
+historical. User-initiated tests now retain the confirmed human identity and
+persist `execution_mode` separately. `?automated=1` selects the test mode while
+keeping editable human name/email fields visible and required. Explicit
+unattended API identities are separate and cannot label a user-initiated test.
+
+Actual-model mock `d40b1e662b444921a462240b6849da1e` verified Agent as Policy,
+Andrew, and `automated_test` as separate fields. Setup was 0.504s; first mock
+completion12.615s included a deliberate10s simulated admission wait. The
+model generated, executed once and checked its program with fresh state/RGB.
+This is transport/inference evidence only, with no physical robot or public queue.
+The exported receipt omits private email. Validation-only unit/UI fixtures use
+explicit synthetic fixture identities and never enter a public robot queue.
+
+Physical run `057f350548ae4607b807c8dc45080267`, source `ddc6515`, executed one
+fresh-state-relative+0.04rad left-joint0 move on RoboHouse, preserving other targets
+and grippers, max300s. Measured completion14.797s after browser Run and15.274s
+from browser entry is **not a visual pass**. The retained timed live view shows
+method movement beginning around15.2–15.4s after entry; precise annotation remains
+in the local audit bundle. Both gates stay open until final visual verification.
+Actual26.125s H264 replay was retained with2,193,915bytes. Earlier missed runs and
+their evidence remain in the tables above; no timing exception is claimed.
+
+Progress candidate adds persistent inline stage/reason below Run, with real
+completed-stage evidence retained. Queue/preparation, fresh leased images,
+program generation, matched physical feedback, result checks and replay cleanup
+have distinct states. Launch uncertainty disables resubmission until status is
+checked; known input rejection offers correction. Stop, history selection,
+file loading, replay buffering and recovery have local explanations. A long
+unchanged stage reports the elapsed wait and available Stop/status refresh;
+there are no fabricated percentages, ETA or GPU stages. The integration launches
+no GPU and claims no GPU timing exception. The camera viewer reduces its explicit
+playback buffer while preserving actual frame content and retained footage.
+
+Offline suite:98 passed in21.10s on dedicated Linux worker, then98 passed
+in24.31s on the clean local source after browser QA found and fixed the missing
+progress-script route. The page's referenced scripts are now route-tested.
+Offline browser verified reserved-name rejection, correction/retry, retained
+stage completions and clearly labelled mock results. Static detector warnings
+concern the incumbent pinned font and the hidden goal-upload preview; the new
+completed-stage text is at least12px. Deployed physical wait-stage verification,
+final source revision and both visual timing gates remain pending.

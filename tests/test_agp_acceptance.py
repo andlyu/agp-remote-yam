@@ -4,7 +4,7 @@ import threading
 from types import SimpleNamespace
 from unittest.mock import patch
 import pytest
-from agp_remote_yam.identity import runner_identity, run_timing
+from agp_remote_yam.identity import runner_identity, run_execution_mode, run_timing
 from agp_remote_yam.manager import Settings
 from agp_remote_yam.policy import AgPPolicy
 from agp_remote_yam.recording import RunRecording, replay_info
@@ -73,6 +73,29 @@ def test_confirmed_runner_is_forwarded_to_public_session_without_fake_email():
     api.create_session('Observe then program', 60)
     assert calls[0][2]['runner_name'] == 'Automated'
     assert 'email' not in calls[0][2]
+
+
+def test_user_initiated_automation_retains_human_identity_and_separate_mode(tmp_path):
+    # Validation-only synthetic identity. This unit test never joins a public queue.
+    app = App(Settings(data=tmp_path, demo=True, camera_source='synthetic'))
+    _, cookie, config = request(app, '/api/config')
+    human = dict(kind='human', name='Fixture Runner', email='fixture@example.test')
+    status, _, run = request(app, '/api/runs', 'POST', dict(task='Offline attribution fixture',
+        duration_s=60, runner=human, execution_mode='automated_test'), cookie=cookie, csrf=config['csrf'])
+    assert status == 202
+    result = wait_run(app, run['id'], cookie)
+    assert result['runner'] == human
+    assert result['execution_mode'] == 'automated_test'
+    assert result['approach'] == 'Agent as Policy'
+    requested = next(e for e in result['events'] if e['kind'] == 'run_requested')
+    assert requested['runner'] == human and requested['execution_mode'] == 'automated_test'
+    system = runner_identity(dict(kind='automated'))
+    assert run_execution_mode(None, system) == 'system'
+    for mode, runner in [('automated_test', system), ('system', human), ('invented', human)]:
+        with pytest.raises(ValueError): run_execution_mode(mode, runner)
+    for name in ['Anonymous', 'Autonomous', 'Automated']:
+        with pytest.raises(ValueError): runner_identity(dict(kind='human', name=name, email='fixture@example.test'))
+    app.manager.close()
 
 
 def test_replay_is_owned_seekable_and_available_only_when_ready(tmp_path):

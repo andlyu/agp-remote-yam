@@ -8,7 +8,7 @@ import time
 from .dependency import runner_root
 from .storage import RunStore, Journal
 from .runtime import AgentRuntime
-from .identity import APPROACH, runner_identity, run_timing, measured_timing
+from .identity import APPROACH, runner_identity, run_execution_mode, run_timing, measured_timing
 from .recording import RunRecording, replay_info
 
 ROBOTS = {"yam-1": "YAM-1", "robot-ba8413962083809c": "RoboHouse YAM"}
@@ -92,7 +92,7 @@ class RunManager:
         return directory
 
     def start(self, task, owner, *, duration=300, parent=None, goal=None, memo=False, memory_version=None,
-              runner=None, timing=None, robot_id=None):
+              runner=None, timing=None, robot_id=None, execution_mode=None):
         robot_id = robot_id or self.settings.robot_id
         if robot_id not in {self.settings.robot_id, *ROBOTS}:
             raise ValueError("Choose a configured YAM station")
@@ -105,6 +105,7 @@ class RunManager:
         if not self.settings.memo_site and (memo or memory_version is not None):
             raise ValueError("This website runs Agent as Policy only. MEMO belongs on its separate website.")
         runner = runner_identity(runner, automated_default=True)
+        execution_mode = run_execution_mode(execution_mode, runner)
         timing = run_timing(timing)
         if parent:
             self.owned(parent, owner)
@@ -134,14 +135,14 @@ class RunManager:
             runtime.memory = memory
             self.store.update(directory, owner=owner, mode="offline_mock" if self.settings.offline else "physical_api",
                               duration_s=duration, approach="Agent as Policy + MEMO" if memo else APPROACH,
-                              runner=runner, timing=timing,
+                              runner=runner, execution_mode=execution_mode, timing=timing,
                               robot_id=robot_id,
                               worker_warm_started_at=runtime.warm_started_at,
                               worker_prepared_at=(json.loads((directory/'worker-prepared.json').read_text())['prepared_at']
                                   if (directory/'worker-prepared.json').is_file() else None),
                               **(dict(memo_enabled=memo, memory_version=memory.version) if memory else {}))
             journal.add("run_requested", "Agent as Policy run requested", approach="Agent as Policy + MEMO" if memo else APPROACH,
-                        runner=runner, physical=not self.settings.offline, timing=timing)
+                        runner=runner, execution_mode=execution_mode, physical=not self.settings.offline, timing=timing)
             try:
                 runtime.check_available()
             except Exception as exc:
