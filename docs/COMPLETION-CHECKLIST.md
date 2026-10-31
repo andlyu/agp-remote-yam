@@ -403,3 +403,52 @@ physical AgP integration and passing software tests do not erase those misses.
   separately; first mock completion12.486 s including10 s mock admission wait.
   This is nonphysical evidence. Earlier standby-only mock17.655 s missed the
   mock timing target; its receipt is retained. New physical acceptance pending.
+
+### Latency acceptance attempt 8 — dedicated worker, target missed
+
+- The user approved one dedicated worker. The existing URL now forwards through
+  restricted encrypted SSH. Owner history and browser ownership were migrated
+  with a verified35,600,619-byte snapshot. The user completed fresh native login;
+  no model authentication cache was copied. The prior AgP services remain
+  available for rollback. Installed application sources matched release9671345.
+- Initial worker mock `bb9406cd553748879865a7ac220b3e04` failed because a Codex
+  companion executable was missing. No movement occurred. The complete official
+  package was installed. Corrected actual-model mock
+  `d9e0b0188429468383db2391c55c8751` passed: standby setup1.4066 s separately,
+  first mock completion12.9096 s including10 s simulated admission. It generated
+  one relative move and verified fresh state. Automated/no email, nonphysical.
+- Physical run `dbdd509e1e6e4d71b687c634fe4969fa`, release9671345, Andrew /
+  Agent as Policy / RoboHouse. Known identity was confirmed by browser
+  automation; this is not an independent novice usability study. Conservative
+  navigation03:02:29.068 UTC October31; Run03:02:31.698. Browser click event
+ 03:02:31.718. First generated trajectory15.973 s after server receipt.
+  Measured completion17.414 s after browser click,17.434 s after conservative
+  click and20.064 s after navigation. Both15-second gates missed; no exception.
+- Settled lease status11.189 s, fresh images12.542 s, new coding step15.815 s.
+  One generated+0.04 rad joint0 request measured+0.038529 rad, preserving the
+  other joints and grippers. Fresh post-action state and RGB were inspected.
+  Actual source-video replay27.125 s/2,305,792 bytes was immediately available.
+- Normal UI playback advanced to0:06/0:27. Migrated previous physical run
+  `a5aa3240d4b04c0e90d856f260d855d4` was selected from history and playback
+  advanced to0:13/0:36. Programs, receipts, timed browser captures and actual
+  arm footage are retained in the chat evidence bundle.
+
+### Next latency candidate — offline and actual-model verification
+
+- The clean public dependency670d8db adds optional per-controller feedback
+  polling. AgP selects0.1 s; other callers retain0.5 s. Freshness, settlement,
+  deadline and Stop checks remain enforced. Initial RGB preserves the validated
+  original JPEG bytes and calibration, avoiding PNG re-encoding.
+- Focused runner checks:43 passed plus8 subtests in6.27 s. Full AgP suite:
+  96 passed in24.12 s on Linux. The first Linux run passed95 tests and could
+  not start the remaining camera test without Node; Node was installed before
+  the successful rerun. Local file/cache reads stalled; those interrupted runs
+  are not claimed as verification.
+- The initial candidate mock preparation was rejected by the production
+  broker's single-worker guard while the live standby occupied it. No task or
+  physical session started. The test moved to its own private broker.
+- Actual-model mock `8d2b583fd649430aa7ee82f1c503a711` passed with that isolated
+  broker: standby setup0.5017 s separately; first mock completion12.0365 s
+  including10 s simulated admission. One generated relative move was measured
+  and verified in fresh mock state; fresh RGB captures were retained. It is
+  nonphysical evidence. Physical acceptance remains pending.

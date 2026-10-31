@@ -88,10 +88,10 @@ class ApiBackend:
         # the canonical FK engine has mutable state and is not thread safe.
         frames = self.rgb_frames(("top", "left", "right"))
         return {arm: self.frames(arm, dict(cams=["top", "wrist"] if arm == "left" else ["wrist"],
-                                         depth=False), observation, rgb_frames=frames)
+                                         depth=False), observation, rgb_frames=frames, preserve_jpeg=True)
                 for arm in ("left", "right")}
 
-    def frames(self, arm, arguments, observation, *, rgb_frames=None):
+    def frames(self, arm, arguments, observation, *, rgb_frames=None, preserve_jpeg=False):
         cameras = arguments.get("cams", ["wrist", "top"])
         depth = arguments.get("depth", True)
         if (not isinstance(cameras, list) or not cameras or len(set(cameras)) != len(cameras)
@@ -128,15 +128,22 @@ class ApiBackend:
                 captured = frame.source_captured_at
                 if captured is not None and captured <= observation.get("settled_after", observation["observed_at"]):
                     raise ValueError("RGB image precedes the settled pose; request a fresh capture")
-                image = Image.open(io.BytesIO(frame.jpeg)).convert("RGB")
+                image = Image.open(io.BytesIO(frame.jpeg))
                 if list(image.size) != camera["image_size"]:
                     raise ValueError("RGB image dimensions differ from this run's calibration")
-                out = io.BytesIO()
-                image.save(out, format="PNG")
-                raw = out.getvalue()
+                if preserve_jpeg:
+                    if image.format != "JPEG":
+                        raise ValueError("Initial RGB capture is not a JPEG")
+                    image.load()
+                    raw = frame.jpeg
+                else:
+                    out = io.BytesIO()
+                    image.convert("RGB").save(out, format="PNG")
+                    raw = out.getvalue()
             transform = (camera["T_base_camera"][arm] if name == "top" else
                 self.geometry.camera_transform(arm, observation, camera["T_grasp_camera"]))
-            path = prefix + "_" + name + ".png"
+            extension = ".jpg" if preserve_jpeg and not (name == "wrist" and depth) else ".png"
+            path = prefix + "_" + name + extension
             self.workspace.write(path, raw)
             paths[name] = path
             calibration[name] = dict(intrinsics=camera.get("depth_intrinsics", {}).get("K", camera["K"]),

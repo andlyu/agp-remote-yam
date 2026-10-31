@@ -85,6 +85,34 @@ def test_stale_rgb_is_rejected_without_a_motion(tmp_path, station):
         backend.frames('left',dict(cams=['top'],depth=False),observation)
 
 
+def test_initial_rgb_preserves_original_jpeg_and_pose_metadata(tmp_path, station):
+    backend, observation, directory, _ = backend_for_capture(tmp_path, station)
+    expected = backend.rgb.fetch('top', '').jpeg
+    captures = backend.initial_frames(observation)
+    for arm, result in captures.items():
+        files = result['files']
+        for name in ('top', 'wrist'):
+            if name in files:
+                assert files[name].endswith('.jpg')
+                assert (directory / 'workspace' / files[name]).read_bytes() == expected
+        metadata = json.loads((directory / 'workspace' / files['calibration']).read_text())
+        assert metadata['_meta']['measured_state']['coordinate_frame'] == arm + '_base'
+        assert metadata['wrist']['image_size'] == [64, 48]
+        assert metadata['wrist']['synchronized_with_state'] is False
+
+
+def test_initial_rgb_still_rejects_pre_settlement_images(tmp_path, station):
+    backend, observation, _, _ = backend_for_capture(tmp_path, station)
+    original = backend.rgb.fetch
+    def stale(*args):
+        frame = original(*args)
+        frame.source_captured_at = observation['observed_at'] - 1
+        return frame
+    backend.rgb.fetch = stale
+    with pytest.raises(ValueError, match='precedes the settled'):
+        backend.initial_frames(observation)
+
+
 def test_initial_input_has_both_measured_arms_and_three_labelled_images(tmp_path, station):
     from agp_remote_yam.observation import initial_input,load_initial_input
     from agp_remote_yam.workspace import Workspace

@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-REMOTE_YAM_COMMIT = "fb1aaa9a696ae4597d06aef41bf876bf2ec90e4d"
+REMOTE_YAM_COMMIT = "670d8db48d891c57a4e0c7df74464a945f7087c1"
 UPSTREAM_AGP_COMMIT = "54dd96ed97c013950816bb674cbc38a68ec19b51"
 ROOT = Path(__file__).resolve().parents[2]
 

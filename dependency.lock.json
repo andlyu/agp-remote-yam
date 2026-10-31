@@ -1,13 +1,13 @@
 {
   "remote_yam": {
-    "repository": "https://github.com/andlyu/blupe-remote-yam.git",
-    "commit": "fb1aaa9a696ae4597d06aef41bf876bf2ec90e4d"
+    "repository": "https://github.com/andlyu/blupe-remote-bots.git",
+    "commit": "670d8db48d891c57a4e0c7df74464a945f7087c1"
   },
   "agent_as_policy_reference": {
     "repository": "https://github.com/agent-as-policy-2026/agent-as-policy",
     "commit": "54dd96ed97c013950816bb674cbc38a68ec19b51"
   },
-  "codex_cli_tested": "0.157.0",
+  "codex_cli_tested": "0.159.0",
   "memo_reference": {
     "repository": "https://github.com/VT-Collab/memo",
     "commit": "d98cc8db145f429c8833a846d357395c935ddd3c",

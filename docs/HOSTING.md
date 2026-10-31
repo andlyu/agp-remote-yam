@@ -12,6 +12,21 @@ a task only on this site; AgP programs, observations, explicit experience reuse,
 runner identity and physical replay remain in its browser-scoped interface.
 This origin must run without `--memo-site`; MEMO is a separate application.
 
+The website backend runs on a dedicated Linux worker. Its existing HTTPS front
+host forwards through a restricted SSH tunnel to the worker's loopback port.
+Migrate browser ownership and retained history together (`web-secret` and
+`runs/`). Authenticate the model account with a fresh native login. Install the
+complete Codex0.159.0 package, including `codex-code-mode-host`; the main
+executable alone cannot start its coding tool. The worker uses the existing
+public Session API and opens no second hardware driver.
+
+The production profile is Luna/none with supported Fast mode, selected by the
+operator. AgP selects0.1 s feedback polling through its clean pinned public
+dependency; the dependency's default remains0.5 s. Freshness, settlement, Stop
+and the five-second reconciliation deadline remain enforced. Initial RGB
+captures preserve validated source JPEGs and calibration metadata. Depth bundles
+and subsequent PNG captures keep their existing formats.
+
 ## Native rootless service
 
 Use the rootless native Codex transport described in the rootless executor

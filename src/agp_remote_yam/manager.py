@@ -172,7 +172,7 @@ class RunManager:
                 self.settings.origin, robot_id=robot_id, supports_trajectories=True,
                 runner=context["runner"])
             controller = RunnerController(api, robot_id=robot_id,
-                recording_root=directory / "recording", submit_attempts=1)
+                recording_root=directory / "recording", submit_attempts=1, feedback_poll_s=.1)
             context["controller"] = controller
             if context["stopped"].is_set():
                 return
